@@ -23,7 +23,7 @@ logger.setLevel(logging.DEBUG)
 
 formatter = logging.Formatter('%(asctime)s [%(thread)d] %(levelname)s: %(message)s')
 
-fh = logging.FileHandler('bot.log')
+fh = logging.FileHandler('bot.log', encoding='utf-8')
 fh.setLevel(logging.DEBUG)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
@@ -124,14 +124,9 @@ class MyHandler(RegexMatchingEventHandler):
         super(MyHandler, self).__init__(regexes=regexes)
         self.queue = queue
 
-    def on_created(self, event):
+    def on_any_event(self, event):
         path = event.src_path
-        logger.debug(f'on_created: {path}')
-        self.queue.put(PathToken(path))
-
-    def on_modified(self, event):
-        path = event.src_path
-        logger.debug(f'on_modified: {path}')
+        logger.debug(f'on_{event.event_type}: {path}')
         self.queue.put(PathToken(path))
 
 
@@ -206,7 +201,7 @@ class WotVersionBot(object):
                 pass
 
     def postTwitter(self, message):
-        logger.debug('twitter post: {}'.format(message.replace('\n', '\\n')))
+        logger.info('twitter post: "{}"'.format(message.replace('\n', '\\n')))
         try:
             status = self.twitterApi.PostUpdate(message)
         except twitter.error.TwitterError as error:
